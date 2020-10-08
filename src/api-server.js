@@ -115,8 +115,8 @@ app.get('/list', async (req, res) => {
     const owner = req.user.id
     try {
         const todo = await Todo.findAll({
-            attributes: ['id', 'task', 'owner_id', 'done'],
-            where: { owner: owner },
+            attributes: ['id', 'owner_id', 'task', 'done'],
+            where: { owner_id: owner },
         })
         res.status(200).json({ code: 200, data: todo })
     } catch (e) {
