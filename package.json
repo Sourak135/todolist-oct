@@ -1,0 +1,14 @@
+{
+  "name": "todolist-oct",
+  "version": "1.0.0",
+  "author": "Sourak135",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./": "./src/"
+  },
+  "devDependencies": {
+    "eslint": "^7.10.0",
+    "prettier": "^2.1.2"
+  }
+}
