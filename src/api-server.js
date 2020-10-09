@@ -104,9 +104,14 @@ app.post('/create', async (req, res) => {
     }
 })
 
-//lister les taches de la personne loguée
-app.get('/list', async (req, res) => {
+
+//lister les taches de la personne loguée avec un filtre "all", "done" ou "undone"
+
+app.get('/list/:filter', async (req, res) => {
     const owner = req.user.id
+    const filtre = req.params.filter
+
+    if (filtre == "all"){
     try {
         const todo = await Todo.findAll({
             attributes: ['id', 'owner_id', 'task', 'done'],
@@ -115,8 +120,41 @@ app.get('/list', async (req, res) => {
         res.status(200).json({ code: 200, data: todo })
     } catch (e) {
         res.status(500).json({ code: 500, data: e })
-    }
+    }}
+
+    
+    if(filtre == "done"){
+        try {
+            const todo = await Todo.findAll({
+                attributes: ['id', 'owner_id', 'task', 'done'],
+                where: { 
+                    owner_id: owner,
+                    done : true
+                 },
+            })
+            res.status(200).json({ code: 200, data: todo })
+        } catch (e) {
+            res.status(500).json({ code: 500, data: e })
+        }}  
+
+    if(filtre == "undone"){
+        try {
+            const todo = await Todo.findAll({
+                attributes: ['id', 'owner_id', 'task', 'done'],
+                where: { 
+                     owner_id: owner,
+                    done : false
+                 },
+                })
+            res.status(200).json({ code: 200, data: todo })
+        } catch (e) {
+            res.status(500).json({ code: 500, data: e })
+        }}  
+
+        else{res.send("erreur de filtre")}
+    
 })
+
 
 //la tache dont l'id est mis en paramètre passe "done=true"
 app.post('/done/:id', async (req, res) => {
