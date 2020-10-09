@@ -1,12 +1,5 @@
 import express from 'express'
 import bodyParser from 'body-parser'
-//import Sequelize from 'sequelize'
-//const Op = Sequelize.Op // Bad trick
-
-/*
-import * as sq from 'sequelize'
-let Op = sq.Op
-*/
 
 // import sequelize connector and User and Message models instances
 import { sequelize, User, Todo } from './models/db.js'
@@ -64,13 +57,13 @@ const getUserByApiKey = async (req, res, next) => {
     const key = req.headers.authorization
     try {
         const user = await User.findAll({
-            attributes: ['id', 'name', 'api_key'],
+            attributes: ['id', 'username', 'api_key'],
             where: { api_key: key },
         })
         req.user = user[0]
         next()
     } catch (e) {
-        res.status(500).json({ code: 500, data: 'Internal server error' })
+        res.status(500).json({ code: 500, data: 'Internal server error 1' })
     }
 }
 
@@ -79,12 +72,12 @@ app.use(bodyParser.urlencoded({ extended: false })) // to support URL-encoded bo
 
 //enregistrer un utilisateur
 app.post('/register', async (req, res) => {
-    const name = req.body.name
+    const username = req.body.username
     try {
-        const user = await User.create({ name: name })
+        const user = await User.create({ username: username })
         res.json({ code: 200, data: user })
     } catch (e) {
-        res.status(500).json({ code: 500, data: 'Internal server error' })
+        res.status(500).json({ code: 500, data: 'Internal server error 2' })
     }
 })
 
@@ -95,14 +88,14 @@ app.use(getUserByApiKey)
 // créer une tache
 //owner = personne logguée
 //content = tache indiquée dans le body
-//create id?
+//id auto incrémenté (peut être mieux de prendre celui du front?)
 app.post('/create', async (req, res) => {
     const owner = req.user.id
-    const content = req.body.content
+    const task = req.body.task
     try {
         const todo = await Todo.create({
             owner_id: owner,
-            task: content,
+            task: task,
         })
 
         res.status(200).json({ code: 200, data: todo })
@@ -111,6 +104,7 @@ app.post('/create', async (req, res) => {
     }
 })
 
+//lister les taches de la personne loguée
 app.get('/list', async (req, res) => {
     const owner = req.user.id
     try {
@@ -123,6 +117,67 @@ app.get('/list', async (req, res) => {
         res.status(500).json({ code: 500, data: e })
     }
 })
+
+//la tache dont l'id est mis en paramètre passe "done=true"
+app.post('/done/:id', async (req, res) => {
+    const taskdone = req.params.id
+    const owner = req.user.id
+    try {        
+            const todo = await Todo.update(
+                { done: true },
+                {
+                    where: {                        
+                        id: taskdone,
+                        owner_id:owner,
+                    },
+                }
+            )
+            res.status(200).json({ code: 200, data: todo })
+    } catch (e) {
+        res.status(500).json({ code: 500, data: e })
+    }
+})
+
+//la tache dont l'id est mis en paramètre passe "done=false"
+app.post('/undone/:id', async (req, res) => {
+    const taskdone = req.params.id
+    const owner = req.user.id
+    try {        
+            const todo = await Todo.update(
+                { done: false },
+                {
+                    where: {                        
+                        id: taskdone,
+                        owner_id:owner,
+                    },
+                }
+            )
+            res.status(200).json({ code: 200, data: todo })
+    } catch (e) {
+        res.status(500).json({ code: 500, data: e })
+    }
+})
+
+//la tache dont l'id est mis en paramètre est effacée de la table todos
+app.post('/delete/:id', async (req, res) => {
+    const taskdone = req.params.id
+    const owner = req.user.id
+    try {        
+            const todo = await Todo.destroy(                
+                {
+                    where: {                        
+                        id: taskdone,
+                        owner_id:owner,
+                    },
+                }
+            )
+            res.status(200).json({ code: 200, data: todo })
+    } catch (e) {
+        res.status(500).json({ code: 500, data: e })
+    }
+})
+
+
 
 // Start express server
 app.listen(PORT, IP, () => {

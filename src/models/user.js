@@ -8,7 +8,7 @@ export default (sequelize) => {
             primaryKey: true,
             autoIncrement: true,
         },
-        name: {
+        username: {
             // colonne username
             type: DataTypes.STRING(20),
             unique: true,
